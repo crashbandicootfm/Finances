@@ -8,14 +8,13 @@ import java.util.Map;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@FieldDefaults(makeFinal = false, level = AccessLevel.PRIVATE)
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class ProfileService {
 
-  @NonFinal
+  @NotNull
   Map<UUID, Profile> loadedProfiles = new HashMap<>();
 
   public @Nullable Profile getProfile(@NotNull UUID uuid) {
@@ -36,6 +35,4 @@ public class ProfileService {
   public @NotNull List<Profile> getProfiles() {
     return new ArrayList<>(loadedProfiles.values());
   }
-
-
 }

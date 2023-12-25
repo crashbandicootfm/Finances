@@ -12,19 +12,25 @@ import org.jetbrains.annotations.NotNull;
 public class TransactionService {
 
   public String getBalance(@NotNull Profile profile) {
-    return String.format("%f0.2", profile.getBalance());
+    return String.format("%f0", profile.getBalance());
   }
 
-  public void sendMoney(
-      float amount,
-      @NotNull Profile sender,
-      @NotNull Profile recipient
-  ) throws TransactionException {
-    sender.withdraw(amount);
-    recipient.deposit(amount);
+  public void sendMoney(float amount, @NotNull Profile sender, @NotNull Profile recipient) {
+    try {
+      sender.withdraw(amount);
+      recipient.deposit(amount);
+      System.out.println("Transaction successful");
+    } catch (TransactionException e) {
+      System.out.println("Failed: " + e.getMessage());
+    }
   }
 
   public void withdraw(float amount, @NotNull Profile profile) {
-    profile.withdraw(amount);
+    try {
+      profile.withdraw(amount);
+      System.out.println("Success");
+    } catch (TransactionException e) {
+      System.out.println("Failed: " + e.getMessage());
+    }
   }
 }

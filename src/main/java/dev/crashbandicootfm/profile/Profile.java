@@ -2,6 +2,7 @@ package dev.crashbandicootfm.profile;
 
 import dev.crashbandicootfm.exception.TransactionException;
 import java.util.UUID;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -32,13 +33,19 @@ public class Profile {
     this.surname = surname;
   }
 
+  public Profile(@NotNull String name, @NotNull String surname, float balance) {
+    this.name = name;
+    this.surname = surname;
+    this.balance = balance;
+  }
+
   public void deposit(float amount) {
     balance += amount;
   }
 
   public void withdraw(float amount) throws TransactionException {
-    if(balance < amount) {
-      throw new TransactionException("");
+    if (balance < amount) {
+      throw new TransactionException("Not enough money");
     }
     balance -= amount;
   }
