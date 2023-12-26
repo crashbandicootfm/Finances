@@ -11,9 +11,6 @@ import org.jetbrains.annotations.NotNull;
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class TransactionService {
 
-  public String getBalance(@NotNull Profile profile) {
-    return String.format("%f0", profile.getBalance());
-  }
 
   public void sendMoney(float amount, @NotNull Profile sender, @NotNull Profile recipient) {
     try {

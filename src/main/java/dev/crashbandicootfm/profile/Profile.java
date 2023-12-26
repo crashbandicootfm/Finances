@@ -2,7 +2,6 @@ package dev.crashbandicootfm.profile;
 
 import dev.crashbandicootfm.exception.TransactionException;
 import java.util.UUID;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -48,5 +47,9 @@ public class Profile {
       throw new TransactionException("Not enough money");
     }
     balance -= amount;
+  }
+
+  public @NotNull String getBalanceFormatted() {
+    return String.format("%.2f", balance);
   }
 }
