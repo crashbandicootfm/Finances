@@ -7,7 +7,6 @@ import dev.crashbandicootfm.service.ProfileService;
 import dev.crashbandicootfm.service.TransactionService;
 import dev.crashbandicootfm.service.action.ReflectActionHandlerService;
 import dev.crashbandicootfm.service.action.ReflectActionHandlerServiceImpl;
-
 import java.util.Objects;
 import java.util.Scanner;
 import lombok.AccessLevel;
@@ -33,37 +32,35 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
   final TransactionService service = new TransactionService();
 
 
-  Profile profile;
-
   @ActionHandler(
-          value = "exit",
-          description = "Shutdowns application"
+      value = "exit",
+      description = "Shutdowns application"
   )
-  private void exit() {
+  private void exit(@NotNull Profile profile) {
     System.exit(0);
   }
 
   @ActionHandler(
-          value = "balance",
-          description = "Shows your current balance"
+      value = "balance",
+      description = "Shows your current balance"
   )
-  private void balance() {
+  private void balance(@NotNull Profile profile) {
     System.out.println("Your balance: " + profile.getBalanceFormatted());
   }
 
   @ActionHandler(
-          value = "send",
-          description = "Send money"
+      value = "send",
+      description = "Send money"
   )
-  private void send() {
+  private void send(@NotNull Profile profile) {
     System.out.print("Enter user name: ");
     String recipientName = scanner.nextLine();
     Profile recipient = profileService.getProfile(recipientName);
-    if (recipient == null)
+    if (recipient == null) {
       System.out.println("No such users");
-    else if(recipient == profile)
+    } else if (recipient == profile) {
       System.out.println("Incorrect");
-    else {
+    } else {
       System.out.print("Enter the amount: ");
       float amount = scanner.nextFloat();
       scanner.nextLine();
@@ -78,33 +75,29 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
   }
 
   @ActionHandler(
-          value = "help",
-          description = "Commands you can use"
+      value = "help",
+      description = "Commands you can use"
   )
-  private void help() {
-    System.out.println("\"balance\" - shows your current balance");
-    System.out.println("\"send\" - send money");
-    System.out.println("\"put\" - put money on your account");
-    System.out.println("\"withdraw\" - take money from your account");
-    System.out.println("\"uuid\" - shows your uuid");
+  private void help(@NotNull Profile profile) {
+    actionHandler.getHelpMessage()
+        .forEach(System.out::println);
   }
 
   @ActionHandler(
-          value = "put",
-          description = "Put money on your account"
+      value = "put",
+      description = "Put money on your account"
   )
-  private void put() {
-    System.out.print("Enter the amount: ");
-    float sum = scanner.nextFloat();
+  private void put(@NotNull Profile profile, String @NotNull... args) {
+    int amount = Integer.parseInt(args[0]);
     scanner.nextLine();
-    profile.deposit(sum);
+    profile.deposit(amount);
   }
 
   @ActionHandler(
-          value = "withdraw",
-          description = "Take money from your account"
+      value = "withdraw",
+      description = "Take money from your account"
   )
-  private void withdraw() {
+  private void withdraw(@NotNull Profile profile) {
     System.out.print("Enter the amount: ");
     float amount = scanner.nextFloat();
     scanner.nextLine();
@@ -112,10 +105,10 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
   }
 
   @ActionHandler(
-          value = "my uuid",
-          description = "Shows your uuid"
+      value = "uuid",
+      description = "Shows your uuid"
   )
-  private void uuid() {
+  private void uuid(@NotNull Profile profile) {
     System.out.println(profile.getUuid());
   }
 
@@ -127,20 +120,11 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
     System.out.print("Enter your name: ");
     actionHandler.discoverHandlerMethods(this);
     String name = scanner.nextLine();
-    profile = Objects.requireNonNull(profileService.getProfile(name));
-
+    Profile profile = profileService.getProfile(name);
     while (true) {
       commandLineService.printCommandLinePrompt();
       String action = scanner.nextLine();
-        switch (action) {
-            case "balance" -> balance();
-            case "send" -> send();
-            case "help" -> help();
-            case "put" -> put();
-            case "withdraw" -> withdraw();
-            case "uuid" -> uuid();
-            default -> actionHandler.handle(action);
-        }
+      actionHandler.handle(action, Objects.requireNonNull(profile));
     }
   }
 }
