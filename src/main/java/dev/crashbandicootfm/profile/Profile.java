@@ -39,7 +39,11 @@ public class Profile {
   }
 
   public void deposit(float amount) {
-    balance += amount;
+    if (amount > 0) {
+      balance += amount;
+      System.out.println("Success");
+    }
+    else System.out.println("Amount can not be 0");
   }
 
   public void withdraw(float amount) throws TransactionException {
