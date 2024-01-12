@@ -32,9 +32,6 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
 
   final TransactionService service = new TransactionService();
 
-
-
-
   @ActionHandler(
           value = "exit",
           description = "Shutdowns application"
@@ -116,7 +113,7 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
       System.out.println("Enter the amount: ");
       float sum = scanner.nextFloat();
       scanner.nextLine();
-      profile.withdraw(sum);
+      withdraw(profile, sum);
     }
   }
 
@@ -141,10 +138,10 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
     while (true) {
       commandLineService.printCommandLinePrompt();
       String actionLine = scanner.nextLine();
-      String[] parts = actionLine.split("\\s+", 2);
+      String[] parts = actionLine.split("\\s+", 2); // Split the input into two parts based on whitespace
 
       String action = parts[0];
-      String argument = parts.length > 1 ? parts[1] : "";
+      String argument = parts.length > 1 ? parts[1] : ""; // The second part is the argument, if present
 
       switch (action) {
         case "balance" -> balance(profile);
@@ -160,12 +157,12 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
         }
         case "withdraw" -> {
           if (parts.length > 1) {
-            float withdrawAmount = Float.parseFloat(parts[1]);
-            withdraw(profile, withdrawAmount);
+            float amount = Float.parseFloat(parts[1]);
+            withdraw(profile, amount);
           } else withdraw(profile, null);
         }
         case "uuid" -> uuid(profile);
-        default -> actionHandler.handle(action);
+        default -> actionHandler.handle(action, profile);
       }
     }
   }
