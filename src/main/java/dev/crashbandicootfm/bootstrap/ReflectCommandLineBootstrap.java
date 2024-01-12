@@ -2,16 +2,13 @@ package dev.crashbandicootfm.bootstrap;
 
 import dev.crashbandicootfm.annotation.ActionHandler;
 import dev.crashbandicootfm.profile.Profile;
-import dev.crashbandicootfm.service.CommandLineService;
 import dev.crashbandicootfm.service.ProfileService;
 import dev.crashbandicootfm.service.TransactionService;
 import dev.crashbandicootfm.service.action.ReflectActionHandlerService;
 import dev.crashbandicootfm.service.action.ReflectActionHandlerServiceImpl;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Scanner;
+import java.util.*;
+
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
@@ -46,6 +43,7 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
   )
   private void balance(Profile profile, @NotNull List<String> args) {
     System.out.printf("Your balance: %.2f", profile.getBalance());
+    System.out.println();
   }
 
   @ActionHandler(
@@ -53,17 +51,24 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
           description = "Send money"
   )
   private void send(Profile profile, @NotNull List<String> recipientName) {
-//    System.out.println("Sending money to: " + recipientName);
-//    Profile recipient = profileService.getProfile(recipientName);
-//
-//    if (recipient == null || recipient == profile) return;
-//    else {
-//      System.out.print("Enter the amount for " + recipientName + ": ");
-//      float amount = scanner.nextFloat();
-//      scanner.nextLine();
-//      System.out.println("Sending money...");
-//      service.sendMoney(amount, profile, recipient);
-//    }
+    System.out.println("Sending money to: " + recipientName);
+
+    if (!recipientName.isEmpty()) {
+      String recipient = recipientName.get(0);
+      Profile recipientProfile = profileService.getProfile(recipient);
+
+      if (recipientProfile != null && !recipientProfile.equals(profile)) {
+        System.out.print("Enter the amount for " + recipient + ": ");
+        float amount = scanner.nextFloat();
+        scanner.nextLine();
+        System.out.println("Sending money...");
+        service.sendMoney(amount, profile, recipientProfile);
+      } else {
+        System.out.println("Invalid recipient");
+      }
+    } else {
+      System.out.println("No recipient specified");
+    }
   }
 
   @ActionHandler(
@@ -80,14 +85,11 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
           description = "Put money on your account"
   )
   private void put(Profile profile, @NotNull List<String> args) {
-//    if (amount != null && amount.length > 0) {
-//      profile.deposit(amount[0]);
-//    } else {
-//      System.out.print("Enter the amount: ");
-//      float sum = scanner.nextFloat();
-//      scanner.nextLine();
-//      profile.deposit(sum);
-//    }
+    if (!args.isEmpty()) {
+      String amountString = args.get(0);
+      float amount = Float.parseFloat(amountString);
+      profile.deposit(amount);
+    }
   }
 
   @ActionHandler(
@@ -95,14 +97,11 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
           description = "Take money from your account"
   )
   private void withdraw(Profile profile, @NotNull List<String> args) {
-//    if (amount != null && amount.length > 0) {
-//      profile.withdraw(amount[0]); // Assuming only one amount is provided
-//    } else {
-//      System.out.println("Enter the amount: ");
-//      float sum = scanner.nextFloat();
-//      scanner.nextLine();
-//      withdraw(profile, sum);
-//    }
+    if (!args.isEmpty()) {
+      String amountString = args.get(0);
+      float amount = Float.parseFloat(amountString);
+      profile.withdraw(amount);
+    }
   }
 
   @ActionHandler(
