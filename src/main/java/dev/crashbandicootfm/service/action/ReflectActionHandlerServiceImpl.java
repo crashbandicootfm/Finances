@@ -1,6 +1,7 @@
 package dev.crashbandicootfm.service.action;
 
 import dev.crashbandicootfm.annotation.ActionHandler;
+import dev.crashbandicootfm.profile.Profile;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,6 +13,7 @@ import lombok.SneakyThrows;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 
 @Log4j2
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
@@ -19,9 +21,18 @@ public class ReflectActionHandlerServiceImpl implements ReflectActionHandlerServ
 
   @NotNull List<RegisteredHandler> registeredHandlers = new ArrayList<>();
 
+
+  @Override
+  public @NotNull @Unmodifiable List<String> getHelpMessage() {
+    return registeredHandlers
+        .stream()
+        .map(h -> String.format("%s - %s", h.getAction(), h.getDescription()))
+        .toList();
+  }
+
   @Override
   @SneakyThrows
-  public void handle(@NotNull String action) { // поиск и выполнение команды
+  public void handle(@NotNull String action, @NotNull Profile profile) {
     RegisteredHandler handler = registeredHandlers
         .stream()
         .filter(h -> h.getAction().equals(action))
@@ -29,7 +40,7 @@ public class ReflectActionHandlerServiceImpl implements ReflectActionHandlerServ
         .orElseThrow(() -> new RuntimeException("No handler found for action" + action));
 
     Method handlerMethod = handler.getHandlerMethod(); // находится метод с зарегестрированной коммандой, которая была вписана в консоль
-    handlerMethod.invoke(handler.getHandler()); // выполняется команда
+    handlerMethod.invoke(handler.getHandler(), profile); // выполняется команда
   }
 
   @Override
