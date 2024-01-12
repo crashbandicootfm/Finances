@@ -33,7 +33,7 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
   final TransactionService service = new TransactionService();
 
 
-  Profile profile;
+
 
   @ActionHandler(
           value = "exit",
@@ -47,7 +47,7 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
           value = "balance",
           description = "Shows your current balance"
   )
-  private void balance() {
+  private void balance(Profile profile) {
     System.out.println("Your balance: " + profile.getBalanceFormatted());
   }
 
@@ -55,25 +55,27 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
           value = "send",
           description = "Send money"
   )
-  private void send() {
-    System.out.print("Enter user name: ");
-    String recipientName = scanner.nextLine();
-    Profile recipient = profileService.getProfile(recipientName);
-    if (recipient == null)
-      System.out.println("No such users");
-    else if(recipient == profile)
-      System.out.println("Incorrect");
-    else {
-      System.out.print("Enter the amount: ");
-      float amount = scanner.nextFloat();
-      scanner.nextLine();
-      System.out.println("Sending money...");
-      try {
-        Thread.sleep(3000);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
+  private void send(Profile profile, String... recipientNames) {
+    for (String recipientName : recipientNames) {
+      System.out.println("Sending money to: " + recipientName);
+      Profile recipient = profileService.getProfile(recipientName);
+
+      if (recipient == null) {
+        System.out.println("No such user: " + recipientName);
+      } else if (recipient == profile) {
+        System.out.println("Incorrect");
+      } else {
+        System.out.print("Enter the amount for " + recipientName + ": ");
+        float amount = scanner.nextFloat();
+        scanner.nextLine();
+        System.out.println("Sending money...");
+        try {
+          Thread.sleep(3000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+        service.sendMoney(amount, profile, recipient);
       }
-      service.sendMoney(amount, profile, recipient);
     }
   }
 
@@ -93,35 +95,42 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
           value = "put",
           description = "Put money on your account"
   )
-  private void put() {
-    System.out.print("Enter the amount: ");
-    float sum = scanner.nextFloat();
-    scanner.nextLine();
-    profile.deposit(sum);
+  private void put(Profile profile, Float amount) {
+    if (amount != null) {
+      profile.deposit(amount);
+    } else {
+      System.out.print("Enter the amount: ");
+      float sum = scanner.nextFloat();
+      scanner.nextLine();
+      profile.deposit(sum);
+    }
   }
 
   @ActionHandler(
           value = "withdraw",
           description = "Take money from your account"
   )
-  private void withdraw() {
-    System.out.print("Enter the amount: ");
-    float amount = scanner.nextFloat();
-    scanner.nextLine();
-    service.withdraw(amount, profile);
+  private void withdraw(Profile profile, Float amount) {
+    if (amount != null) profile.withdraw(amount);
+    else {
+      System.out.println("Enter the amount: ");
+      float sum = scanner.nextFloat();
+      scanner.nextLine();
+      profile.withdraw(sum);
+    }
   }
 
   @ActionHandler(
           value = "my uuid",
           description = "Shows your uuid"
   )
-  private void uuid() {
+  private void uuid(Profile profile) {
     System.out.println(profile.getUuid());
   }
 
   @Override
   @SuppressWarnings("InfiniteLoopStatement")
-  public void bootstrap() {
+  public void bootstrap(Profile profile) {
     profileService.addProfile(new Profile("Andrej", "Ivanov", 862.8F));
     profileService.addProfile(new Profile("Dima", "Ivanov", 762.0F));
     System.out.print("Enter your name: ");
@@ -131,16 +140,33 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
 
     while (true) {
       commandLineService.printCommandLinePrompt();
-      String action = scanner.nextLine();
-        switch (action) {
-            case "balance" -> balance();
-            case "send" -> send();
-            case "help" -> help();
-            case "put" -> put();
-            case "withdraw" -> withdraw();
-            case "uuid" -> uuid();
-            default -> actionHandler.handle(action);
+      String actionLine = scanner.nextLine();
+      String[] parts = actionLine.split("\\s+", 2);
+
+      String action = parts[0];
+      String argument = parts.length > 1 ? parts[1] : "";
+
+      switch (action) {
+        case "balance" -> balance(profile);
+        case "send" -> send(profile, argument);
+        case "help" -> help();
+        case "put" -> {
+          if (parts.length > 1) {
+            float amount = Float.parseFloat(parts[1]);
+            put(profile, amount);
+          } else {
+            put(profile, null);
+          }
         }
+        case "withdraw" -> {
+          if (parts.length > 1) {
+            float withdrawAmount = Float.parseFloat(parts[1]);
+            withdraw(profile, withdrawAmount);
+          } else withdraw(profile, null);
+        }
+        case "uuid" -> uuid(profile);
+        default -> actionHandler.handle(action);
+      }
     }
   }
 }
