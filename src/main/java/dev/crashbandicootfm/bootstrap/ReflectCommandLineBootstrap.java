@@ -8,6 +8,8 @@ import dev.crashbandicootfm.service.TransactionService;
 import dev.crashbandicootfm.service.action.ReflectActionHandlerService;
 import dev.crashbandicootfm.service.action.ReflectActionHandlerServiceImpl;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
 import lombok.AccessLevel;
@@ -17,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 
 @FieldDefaults(makeFinal = false, level = AccessLevel.PRIVATE)
 public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
+
 
   @NotNull
   final ReflectActionHandlerService actionHandler = new ReflectActionHandlerServiceImpl();
@@ -52,27 +55,17 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
           value = "send",
           description = "Send money"
   )
-  private void send(Profile profile, String... recipientNames) {
-    for (String recipientName : recipientNames) {
-      System.out.println("Sending money to: " + recipientName);
-      Profile recipient = profileService.getProfile(recipientName);
+  private void send(Profile profile, String recipientName) {
+    System.out.println("Sending money to: " + recipientName);
+    Profile recipient = profileService.getProfile(recipientName);
 
-      if (recipient == null) {
-        System.out.println("No such user: " + recipientName);
-      } else if (recipient == profile) {
-        System.out.println("Incorrect");
-      } else {
-        System.out.print("Enter the amount for " + recipientName + ": ");
-        float amount = scanner.nextFloat();
-        scanner.nextLine();
-        System.out.println("Sending money...");
-        try {
-          Thread.sleep(3000);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
-        service.sendMoney(amount, profile, recipient);
-      }
+    if (recipient == null || recipient == profile) return;
+    else {
+      System.out.print("Enter the amount for " + recipientName + ": ");
+      float amount = scanner.nextFloat();
+      scanner.nextLine();
+      System.out.println("Sending money...");
+      service.sendMoney(amount, profile, recipient);
     }
   }
 
@@ -92,9 +85,9 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
           value = "put",
           description = "Put money on your account"
   )
-  private void put(Profile profile, Float amount) {
-    if (amount != null) {
-      profile.deposit(amount);
+  private void put(Profile profile, Float... amount) {
+    if (amount != null && amount.length > 0) {
+      profile.deposit(amount[0]);
     } else {
       System.out.print("Enter the amount: ");
       float sum = scanner.nextFloat();
@@ -107,9 +100,10 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
           value = "withdraw",
           description = "Take money from your account"
   )
-  private void withdraw(Profile profile, Float amount) {
-    if (amount != null) profile.withdraw(amount);
-    else {
+  private void withdraw(Profile profile, Float... amount) {
+    if (amount != null && amount.length > 0) {
+      profile.withdraw(amount[0]); // Assuming only one amount is provided
+    } else {
       System.out.println("Enter the amount: ");
       float sum = scanner.nextFloat();
       scanner.nextLine();
@@ -138,31 +132,35 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
     while (true) {
       commandLineService.printCommandLinePrompt();
       String actionLine = scanner.nextLine();
-      String[] parts = actionLine.split("\\s+", 2); // Split the input into two parts based on whitespace
+      String[] parts = actionLine.split("\\s+", 2);
 
       String action = parts[0];
-      String argument = parts.length > 1 ? parts[1] : ""; // The second part is the argument, if present
+      String argument = parts.length > 1 ? parts[1] : "";
+
+      List<Class<?>> parameterTypes = actionHandler.getParameterTypes(action);
+      Object[] args = new Object[parameterTypes.size()];
+
+      for (int i = 0; i < parameterTypes.size(); i++) {
+        Class<?> parameterType = parameterTypes.get(i);
+
+        if (parameterType == Profile.class) {
+          args[i] = profile;
+        } else if (parameterType == String.class) {
+          args[i] = argument;
+        } else if (parameterType == Float.class || parameterType == float.class) {
+          args[i] = scanner.nextFloat();
+          scanner.nextLine();
+        }
+      }
 
       switch (action) {
-        case "balance" -> balance(profile);
-        case "send" -> send(profile, argument);
-        case "help" -> help();
-        case "put" -> {
-          if (parts.length > 1) {
-            float amount = Float.parseFloat(parts[1]);
-            put(profile, amount);
-          } else {
-            put(profile, null);
-          }
-        }
-        case "withdraw" -> {
-          if (parts.length > 1) {
-            float amount = Float.parseFloat(parts[1]);
-            withdraw(profile, amount);
-          } else withdraw(profile, null);
-        }
-        case "uuid" -> uuid(profile);
-        default -> actionHandler.handle(action, profile);
+        case "balance" -> actionHandler.handle(action, profile, args);
+        case "send" -> actionHandler.handle(action, profile, args);
+        case "help" -> actionHandler.handle(action, profile, args);
+        case "put" -> actionHandler.handle(action, profile, args);
+        case "withdraw" -> actionHandler.handle(action, profile, args);
+        case "uuid" -> actionHandler.handle(action, profile, args);
+        default -> actionHandler.handle(action, profile, args);
       }
     }
   }

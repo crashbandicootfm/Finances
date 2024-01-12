@@ -10,7 +10,7 @@ public interface ActionHandlerService {
 
   @NotNull @Unmodifiable List<String> getHelpMessage();
 
-  void handle(@NotNull String action, @NotNull Profile profile);
+  void handle(@NotNull String action, @NotNull Profile profile, @NotNull Object[] args);
 
   void registerHandler(
       @NotNull String action,
