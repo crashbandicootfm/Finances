@@ -53,7 +53,4 @@ public class Profile {
     balance -= amount;
   }
 
-  public @NotNull String getBalanceFormatted() {
-    return String.format("%.2f", balance);
-  }
 }

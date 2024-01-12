@@ -31,31 +31,17 @@ public class ReflectActionHandlerServiceImpl implements ReflectActionHandlerServ
   }
 
   @Override
-  public @NotNull @Unmodifiable List<Class<?>> getParameterTypes(@NotNull String action) {
-    RegisteredHandler handler = registeredHandlers
-            .stream()
-            .filter(h -> h.getAction().equals(action))
-            .findFirst()
-            .orElseThrow(() -> new RuntimeException("No handler found for action" + action));
-
-    return Arrays.asList(handler.getHandlerMethod().getParameterTypes());
-  }
-
-  @Override
   @SneakyThrows
-  public void handle(@NotNull String action, @NotNull Profile profile, @NotNull Object[] args) {
+  public void handle(@NotNull String action, @NotNull Profile profile, @NotNull List<String> args) {
     RegisteredHandler handler = registeredHandlers
         .stream()
         .filter(h -> h.getAction().equals(action))
         .findFirst()
-        .orElseThrow(() -> new RuntimeException("No handler found for action" + action));
+        .orElseThrow(() -> new RuntimeException("No handler found for action " + action));
 
     Method handlerMethod = handler.getHandlerMethod(); // находится метод с зарегестрированной коммандой, которая была вписана в консоль
 
-    List<Object> parameters = new ArrayList<>();
-    parameters.add(profile);
-
-    handlerMethod.invoke(handler.getHandler(), parameters.toArray()); // выполняется команда
+    handlerMethod.invoke(handler.getHandler(), profile, args); // выполняется команда
   }
 
   @Override

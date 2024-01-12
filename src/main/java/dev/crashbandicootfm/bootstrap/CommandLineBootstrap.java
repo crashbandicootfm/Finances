@@ -4,5 +4,5 @@ import dev.crashbandicootfm.profile.Profile;
 
 public interface CommandLineBootstrap {
 
-  void bootstrap(Profile profile);
+  void bootstrap();
 }
