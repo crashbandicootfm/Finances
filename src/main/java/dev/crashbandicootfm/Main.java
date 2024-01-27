@@ -3,7 +3,6 @@ package dev.crashbandicootfm;
 
 import dev.crashbandicootfm.bootstrap.CommandLineBootstrap;
 import dev.crashbandicootfm.bootstrap.ReflectCommandLineBootstrap;
-import dev.crashbandicootfm.profile.Profile;
 
 public class Main {
 

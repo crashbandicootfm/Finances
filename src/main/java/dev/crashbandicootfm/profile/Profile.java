@@ -21,21 +21,19 @@ public class Profile {
   @NotNull
   String name;
 
-  @NotNull
-  String surname;
-
   @NonFinal
   float balance = 0;
 
-  public Profile(@NotNull String name, @NotNull String surname) {
-    this.name = name;
-    this.surname = surname;
-  }
+  @NonFinal
+  int id;
 
-  public Profile(@NotNull String name, @NotNull String surname, float balance) {
+  @NonFinal
+  int pin;
+
+  public Profile(int id, @NotNull String name, int pin) {
     this.name = name;
-    this.surname = surname;
-    this.balance = balance;
+    this.id = id;
+    this.pin = pin;
   }
 
   public void deposit(float amount) {

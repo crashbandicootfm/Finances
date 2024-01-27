@@ -35,4 +35,11 @@ public class ProfileService {
   public @NotNull List<Profile> getProfiles() {
     return new ArrayList<>(loadedProfiles.values());
   }
+
+  public @Nullable Profile getProfile(@NotNull String name, int id) {
+    return loadedProfiles.values()
+            .stream()
+            .filter(profile -> profile.getName().equals(name) && profile.getId() == id)
+            .findFirst().orElse(null);
+  }
 }

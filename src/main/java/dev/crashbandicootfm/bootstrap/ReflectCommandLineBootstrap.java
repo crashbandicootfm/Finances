@@ -1,21 +1,25 @@
 package dev.crashbandicootfm.bootstrap;
 
 import dev.crashbandicootfm.annotation.ActionHandler;
+import dev.crashbandicootfm.database.DatabaseConnection;
+import dev.crashbandicootfm.database.LoadFromDataBase;
 import dev.crashbandicootfm.profile.Profile;
+import dev.crashbandicootfm.service.Authorization;
 import dev.crashbandicootfm.service.ProfileService;
 import dev.crashbandicootfm.service.TransactionService;
 import dev.crashbandicootfm.service.action.ReflectActionHandlerService;
 import dev.crashbandicootfm.service.action.ReflectActionHandlerServiceImpl;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.*;
 
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 
-
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
+public final class ReflectCommandLineBootstrap implements CommandLineBootstrap, Authorization, LoadFromDataBase {
 
   @NotNull
   ReflectActionHandlerService actionHandler = new ReflectActionHandlerServiceImpl();
@@ -28,6 +32,9 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
 
   @NotNull
   TransactionService service = new TransactionService();
+
+  @NotNull
+  Connection connection = DatabaseConnection.connect();
 
   @ActionHandler(
           value = "exit",
@@ -77,7 +84,7 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
   )
   private void help(Profile profile, @NotNull List<String> args) {
     actionHandler.getHelpMessage()
-        .forEach(System.out::println);
+            .forEach(System.out::println);
   }
 
   @ActionHandler(
@@ -115,26 +122,39 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
   @Override
   @SuppressWarnings("InfiniteLoopStatement")
   public void bootstrap() {
-    profileService.addProfile(new Profile("Andrej", "Ivanov", 862.8F));
-    profileService.addProfile(new Profile("Dima", "Ivanov", 762.0F));
-    System.out.print("Enter your name: ");
-    actionHandler.discoverHandlerMethods(this);
-    String name = scanner.nextLine();
-    Profile profile = Objects.requireNonNull(profileService.getProfile(name));
+    try (connection) {
+      @NotNull List<Profile> profiles = fetchProfilesFromDatabase(connection);
 
-    while (true) {
-      System.out.print("fin > ");
-      String line = scanner.nextLine();
-      String[] params = line.split(" ");
-      String action = params[0];
+      profiles.forEach(profileService::addProfile);
 
-      actionHandler.handle(
-          action,
-          profile,
-          Arrays.stream(params)
-              .skip(1)
-              .toList()
-      );
+      System.out.print("Enter your name: ");
+      actionHandler.discoverHandlerMethods(this);
+      String name = scanner.nextLine();
+
+      Profile profile = profileService.getProfile(name);
+      if (profile == null) {
+        System.out.println("Profile not found for name: " + name);
+        return;
+      }
+      authorization(name);
+
+      while (true) {
+        System.out.print("fin > ");
+        String line = scanner.nextLine();
+        String[] params = line.split(" ");
+        String action = params[0];
+
+        actionHandler.handle(
+                action,
+                profile,
+                Arrays.stream(params)
+                        .skip(1)
+                        .toList()
+        );
+      }
+    } catch (SQLException e) {
+      e.printStackTrace();
     }
+    DatabaseConnection.closeConnection(connection);
   }
 }
