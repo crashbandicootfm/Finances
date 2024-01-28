@@ -1,25 +1,28 @@
 package dev.crashbandicootfm.bootstrap;
 
 import dev.crashbandicootfm.annotation.ActionHandler;
-import dev.crashbandicootfm.database.DatabaseConnection;
-import dev.crashbandicootfm.database.LoadFromDataBase;
+import dev.crashbandicootfm.authorization.AuthorizationService;
+import dev.crashbandicootfm.authorization.AuthorizationServiceImpl;
+import dev.crashbandicootfm.connection.ConnectionFactory;
+import dev.crashbandicootfm.connection.ConnectionFactoryImpl;
 import dev.crashbandicootfm.profile.Profile;
-import dev.crashbandicootfm.service.Authorization;
+import dev.crashbandicootfm.repository.ProfileRepository;
+import dev.crashbandicootfm.repository.ProfileRepositoryImpl;
 import dev.crashbandicootfm.service.ProfileService;
 import dev.crashbandicootfm.service.TransactionService;
 import dev.crashbandicootfm.service.action.ReflectActionHandlerService;
 import dev.crashbandicootfm.service.action.ReflectActionHandlerServiceImpl;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.*;
 
 import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.jetbrains.annotations.NotNull;
 
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-public final class ReflectCommandLineBootstrap implements CommandLineBootstrap, Authorization, LoadFromDataBase {
+@RequiredArgsConstructor
+public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
 
   @NotNull
   ReflectActionHandlerService actionHandler = new ReflectActionHandlerServiceImpl();
@@ -28,13 +31,19 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap, 
   Scanner scanner = new Scanner(System.in);
 
   @NotNull
-  ProfileService profileService = new ProfileService();
-
-  @NotNull
   TransactionService service = new TransactionService();
 
   @NotNull
-  Connection connection = DatabaseConnection.connect();
+  ConnectionFactory connectionFactory = new ConnectionFactoryImpl();
+
+  @NotNull
+  ProfileRepository profileRepository = new ProfileRepositoryImpl(connectionFactory);
+
+  @NotNull
+  ProfileService profileService = new ProfileService(profileRepository);
+
+  @NotNull
+  AuthorizationService authorizationService = new AuthorizationServiceImpl(profileRepository);
 
   @ActionHandler(
           value = "exit",
@@ -122,21 +131,19 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap, 
   @Override
   @SuppressWarnings("InfiniteLoopStatement")
   public void bootstrap() {
-    try (connection) {
-      @NotNull List<Profile> profiles = fetchProfilesFromDatabase(connection);
-
-      profiles.forEach(profileService::addProfile);
-
       System.out.print("Enter your name: ");
       actionHandler.discoverHandlerMethods(this);
       String name = scanner.nextLine();
 
-      Profile profile = profileService.getProfile(name);
+      Profile profile = profileService.loadAllProfiles(name);
       if (profile == null) {
         System.out.println("Profile not found for name: " + name);
-        return;
+        System.out.print("Enter your pin: ");
+        scanner.nextLine();
+        int pin = scanner.nextInt();
+        profileService.addUser(name, pin);
       }
-      authorization(name);
+      authorizationService.authorize(name);
 
       while (true) {
         System.out.print("fin > ");
@@ -152,9 +159,5 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap, 
                         .toList()
         );
       }
-    } catch (SQLException e) {
-      e.printStackTrace();
-    }
-    DatabaseConnection.closeConnection(connection);
   }
 }

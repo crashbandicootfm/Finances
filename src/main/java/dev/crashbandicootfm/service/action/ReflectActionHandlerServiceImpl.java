@@ -21,7 +21,6 @@ public class ReflectActionHandlerServiceImpl implements ReflectActionHandlerServ
 
   @NotNull List<RegisteredHandler> registeredHandlers = new ArrayList<>();
 
-
   @Override
   public @NotNull @Unmodifiable List<String> getHelpMessage() {
     return registeredHandlers
@@ -55,7 +54,7 @@ public class ReflectActionHandlerServiceImpl implements ReflectActionHandlerServ
     );
     registeredHandlers.add(registeredHandler);
     log.info(
-        "Registered action handler for action: {} with methpd: {}",
+        "Registered action handler for action: {} with method: {}",
         action,
         method.getName()
     );

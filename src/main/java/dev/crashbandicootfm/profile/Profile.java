@@ -36,6 +36,10 @@ public class Profile {
     this.pin = pin;
   }
 
+  public  Profile(@NotNull String name, int pin) {
+    this.name = name;
+    this.pin = pin;
+  }
   public void deposit(float amount) {
     if (amount > 0) {
       balance += amount;
