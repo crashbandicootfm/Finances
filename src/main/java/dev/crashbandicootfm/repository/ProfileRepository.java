@@ -6,7 +6,6 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
 
-public interface ProfileRepository {
+public interface ProfileRepository extends Repository<Profile>{
 
-    @NotNull @Unmodifiable List<Profile> getAll();
 }

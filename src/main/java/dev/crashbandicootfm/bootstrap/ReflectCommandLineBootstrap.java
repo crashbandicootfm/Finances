@@ -8,13 +8,15 @@ import dev.crashbandicootfm.connection.ConnectionFactoryImpl;
 import dev.crashbandicootfm.profile.Profile;
 import dev.crashbandicootfm.repository.ProfileRepository;
 import dev.crashbandicootfm.repository.ProfileRepositoryImpl;
-import dev.crashbandicootfm.service.ProfileService;
-import dev.crashbandicootfm.service.TransactionService;
 import dev.crashbandicootfm.service.action.ReflectActionHandlerService;
 import dev.crashbandicootfm.service.action.ReflectActionHandlerServiceImpl;
-
-import java.util.*;
-
+import dev.crashbandicootfm.service.profile.ProfileService;
+import dev.crashbandicootfm.service.profile.ProfileServiceImpl;
+import dev.crashbandicootfm.service.transaction.TransactionService;
+import java.sql.Connection;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Scanner;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -24,6 +26,10 @@ import org.jetbrains.annotations.NotNull;
 @RequiredArgsConstructor
 public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
 
+  public static final String URL = "";
+  public static final String USERNAME = "";
+  public static final String PASSWORD = "";
+
   @NotNull
   ReflectActionHandlerService actionHandler = new ReflectActionHandlerServiceImpl();
 
@@ -31,31 +37,33 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
   Scanner scanner = new Scanner(System.in);
 
   @NotNull
+  ConnectionFactory connectionFactory = new ConnectionFactoryImpl();
+
+  @NotNull Connection connection = connectionFactory.createConnection(URL, USERNAME, PASSWORD);
+
+  @NotNull
+  ProfileRepository profileRepository = new ProfileRepositoryImpl(connection);
+
+  @NotNull
+  ProfileService profileService = new ProfileServiceImpl(profileRepository);
+
+  @NotNull
   TransactionService service = new TransactionService();
 
   @NotNull
-  ConnectionFactory connectionFactory = new ConnectionFactoryImpl();
-
-  @NotNull
-  ProfileRepository profileRepository = new ProfileRepositoryImpl(connectionFactory);
-
-  @NotNull
-  ProfileService profileService = new ProfileService(profileRepository);
-
-  @NotNull
-  AuthorizationService authorizationService = new AuthorizationServiceImpl(profileRepository);
+  AuthorizationService authorizationService = new AuthorizationServiceImpl();
 
   @ActionHandler(
-          value = "exit",
-          description = "Shutdowns application"
+      value = "exit",
+      description = "Shutdowns application"
   )
   private void exit(Profile profile, @NotNull List<String> args) {
     System.exit(0);
   }
 
   @ActionHandler(
-          value = "balance",
-          description = "Shows your current balance"
+      value = "balance",
+      description = "Shows your current balance"
   )
   private void balance(Profile profile, @NotNull List<String> args) {
     System.out.printf("Your balance: %.2f", profile.getBalance());
@@ -63,8 +71,8 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
   }
 
   @ActionHandler(
-          value = "send",
-          description = "Send money"
+      value = "send",
+      description = "Send money"
   )
   private void send(Profile profile, @NotNull List<String> recipientName) {
     System.out.println("Sending money to: " + recipientName);
@@ -88,17 +96,17 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
   }
 
   @ActionHandler(
-          value = "help",
-          description = "Commands you can use"
+      value = "help",
+      description = "Commands you can use"
   )
   private void help(Profile profile, @NotNull List<String> args) {
     actionHandler.getHelpMessage()
-            .forEach(System.out::println);
+        .forEach(System.out::println);
   }
 
   @ActionHandler(
-          value = "put",
-          description = "Put money on your account"
+      value = "put",
+      description = "Put money on your account"
   )
   private void put(Profile profile, @NotNull List<String> args) {
     if (!args.isEmpty()) {
@@ -109,8 +117,8 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
   }
 
   @ActionHandler(
-          value = "withdraw",
-          description = "Take money from your account"
+      value = "withdraw",
+      description = "Take money from your account"
   )
   private void withdraw(Profile profile, @NotNull List<String> args) {
     if (!args.isEmpty()) {
@@ -121,43 +129,41 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
   }
 
   @ActionHandler(
-          value = "uuid",
-          description = "Shows your uuid"
+      value = "uuid",
+      description = "Shows your uuid"
   )
-  private void uuid(Profile profile, @NotNull List<String> args) {
+  private void uuid(@NotNull Profile profile, @NotNull List<String> args) {
     System.out.printf("Your UUID: %s", profile.getUuid());
   }
 
   @Override
   @SuppressWarnings("InfiniteLoopStatement")
   public void bootstrap() {
-      System.out.print("Enter your name: ");
-      actionHandler.discoverHandlerMethods(this);
-      String name = scanner.nextLine();
+    profileService.enable();
+    System.out.print("Enter your name: ");
+    actionHandler.discoverHandlerMethods(this);
+    String name = scanner.nextLine();
 
-      Profile profile = profileService.loadAllProfiles(name);
-      if (profile == null) {
-        System.out.println("Profile not found for name: " + name);
-        System.out.print("Enter your pin: ");
-        scanner.nextLine();
-        int pin = scanner.nextInt();
-        profileService.addUser(name, pin);
-      }
-      authorizationService.authorize(name);
+    Profile profile = profileService.getProfile(name);
+    if (profile == null) {
+      System.out.println("Profile not found for name: " + name);
+      return;
+    }
+    authorizationService.authorize(profile);
 
-      while (true) {
-        System.out.print("fin > ");
-        String line = scanner.nextLine();
-        String[] params = line.split(" ");
-        String action = params[0];
+    while (true) {
+      System.out.print("fin > ");
+      String line = scanner.nextLine();
+      String[] params = line.split(" ");
+      String action = params[0];
 
-        actionHandler.handle(
-                action,
-                profile,
-                Arrays.stream(params)
-                        .skip(1)
-                        .toList()
-        );
-      }
+      actionHandler.handle(
+          action,
+          profile,
+          Arrays.stream(params)
+              .skip(1)
+              .toList()
+      );
+    }
   }
 }
