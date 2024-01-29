@@ -1,6 +1,5 @@
 package dev.crashbandicootfm.service.profile;
 
-import dev.crashbandicootfm.profile.Profile;
 import dev.crashbandicootfm.service.Service;
 import java.util.List;
 import java.util.UUID;

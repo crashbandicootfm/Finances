@@ -1,17 +1,19 @@
 package dev.crashbandicootfm.bootstrap;
 
 import dev.crashbandicootfm.annotation.ActionHandler;
-import dev.crashbandicootfm.authorization.AuthorizationService;
-import dev.crashbandicootfm.authorization.AuthorizationServiceImpl;
+import dev.crashbandicootfm.service.authorization.AuthorizationService;
+import dev.crashbandicootfm.service.authorization.AuthorizationServiceImpl;
 import dev.crashbandicootfm.connection.ConnectionFactory;
 import dev.crashbandicootfm.connection.ConnectionFactoryImpl;
-import dev.crashbandicootfm.profile.Profile;
+import dev.crashbandicootfm.service.profile.Profile;
 import dev.crashbandicootfm.repository.ProfileRepository;
 import dev.crashbandicootfm.repository.ProfileRepositoryImpl;
 import dev.crashbandicootfm.service.action.ReflectActionHandlerService;
 import dev.crashbandicootfm.service.action.ReflectActionHandlerServiceImpl;
 import dev.crashbandicootfm.service.profile.ProfileService;
 import dev.crashbandicootfm.service.profile.ProfileServiceImpl;
+import dev.crashbandicootfm.service.registration.RegistrationService;
+import dev.crashbandicootfm.service.registration.RegistrationServiceImpl;
 import dev.crashbandicootfm.service.transaction.TransactionService;
 import java.sql.Connection;
 import java.util.Arrays;
@@ -47,6 +49,9 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
 
   @NotNull
   ProfileService profileService = new ProfileServiceImpl(profileRepository);
+
+  @NotNull
+  RegistrationService registrationService = new RegistrationServiceImpl(profileService);
 
   @NotNull
   TransactionService service = new TransactionService();
@@ -138,17 +143,7 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
   }
 
   private void registration() {
-    Scanner scanner = new Scanner(System.in);
-    System.out.println("Registration for new profile");
-    System.out.println("Already used IDs: " + profileRepository.getUserIds());
-    System.out.print("Enter your id for adding to database: ");
-    int id = Integer.parseInt(scanner.nextLine());
-    System.out.print("Enter your name for adding to database: ");
-    String name = scanner.nextLine();
-    System.out.print("Enter your pin for adding to database: ");
-    int pin = scanner.nextInt();
-    Profile newProfile = new Profile(id, name, pin);
-    profileRepository.save(newProfile);
+
   }
 
   @Override

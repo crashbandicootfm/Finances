@@ -1,7 +1,7 @@
 package dev.crashbandicootfm.service.action;
 
 import dev.crashbandicootfm.annotation.ActionHandler;
-import dev.crashbandicootfm.profile.Profile;
+import dev.crashbandicootfm.service.profile.Profile;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;

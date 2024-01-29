@@ -1,6 +1,6 @@
-package dev.crashbandicootfm.authorization;
+package dev.crashbandicootfm.service.authorization;
 
-import dev.crashbandicootfm.profile.Profile;
+import dev.crashbandicootfm.service.profile.Profile;
 import java.util.Scanner;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

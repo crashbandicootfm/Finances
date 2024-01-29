@@ -1,7 +1,7 @@
 package dev.crashbandicootfm.service.transaction;
 
 import dev.crashbandicootfm.exception.TransactionException;
-import dev.crashbandicootfm.profile.Profile;
+import dev.crashbandicootfm.service.profile.Profile;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

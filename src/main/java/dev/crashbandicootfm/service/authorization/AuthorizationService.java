@@ -1,6 +1,6 @@
-package dev.crashbandicootfm.authorization;
+package dev.crashbandicootfm.service.authorization;
 
-import dev.crashbandicootfm.profile.Profile;
+import dev.crashbandicootfm.service.profile.Profile;
 import org.jetbrains.annotations.NotNull;
 
 public interface AuthorizationService {

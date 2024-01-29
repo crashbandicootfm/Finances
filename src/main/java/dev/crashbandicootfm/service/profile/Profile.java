@@ -1,4 +1,4 @@
-package dev.crashbandicootfm.profile;
+package dev.crashbandicootfm.service.profile;
 
 import dev.crashbandicootfm.exception.TransactionException;
 import java.util.UUID;
@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 public class Profile {
 
   @NotNull
-  UUID uuid = UUID.randomUUID();
+  UUID uuid;
 
   @NotNull
   String name;
@@ -30,13 +30,15 @@ public class Profile {
   @NonFinal
   int pin;
 
-  public Profile(int id, @NotNull String name, int pin) {
+  public Profile(@NotNull UUID uuid, int id, @NotNull String name, int pin) {
+    this.uuid = uuid;
     this.name = name;
     this.id = id;
     this.pin = pin;
   }
 
-  public  Profile(@NotNull String name, int pin) {
+  public  Profile(@NotNull UUID uuid, @NotNull String name, int pin) {
+    this.uuid = uuid;
     this.name = name;
     this.pin = pin;
   }

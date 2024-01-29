@@ -1,6 +1,6 @@
 package dev.crashbandicootfm.service.action;
 
-import dev.crashbandicootfm.profile.Profile;
+import dev.crashbandicootfm.service.profile.Profile;
 import java.lang.reflect.Method;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
