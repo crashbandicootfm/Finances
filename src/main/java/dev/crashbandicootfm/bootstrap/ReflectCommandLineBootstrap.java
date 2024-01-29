@@ -140,6 +140,7 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
   private void registration() {
     Scanner scanner = new Scanner(System.in);
     System.out.println("Registration for new profile");
+    System.out.println("Already used IDs: " + profileRepository.getUserIds());
     System.out.print("Enter your id for adding to database: ");
     int id = Integer.parseInt(scanner.nextLine());
     System.out.print("Enter your name for adding to database: ");

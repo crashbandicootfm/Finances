@@ -1,6 +1,5 @@
 package dev.crashbandicootfm.repository;
 
-import dev.crashbandicootfm.connection.ConnectionFactory;
 import dev.crashbandicootfm.profile.Profile;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -8,7 +7,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -51,5 +53,21 @@ public class ProfileRepositoryImpl implements ProfileRepository {
     preparedStatement.setString(2, profile.getName());
     preparedStatement.setInt(3, profile.getPin());
     preparedStatement.executeUpdate();
+  }
+
+  @Override
+  @SneakyThrows
+  public Set<Integer> getUserIds() {
+    Set<Integer> existingIDs = new HashSet<>();
+
+    Statement statement = connection.createStatement();
+    ResultSet resultSet = statement.executeQuery("SELECT id FROM users");
+
+    while(resultSet.next()) {
+      existingIDs.add(resultSet.getInt("id"));
+
+    }
+
+    return existingIDs;
   }
 }
