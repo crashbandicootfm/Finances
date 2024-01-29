@@ -13,16 +13,18 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
   @Override
   public void authorize(@NotNull Profile profile) {
-    System.out.print("Enter your pin: ");
     Scanner scanner = new Scanner(System.in);
-    int password = scanner.nextInt();
 
-    if (profile.getPin() == password) {
-      System.out.println("Verification passed");
-      return;
+    while (true) {
+      System.out.print("Enter your pin: ");
+      int password = scanner.nextInt();
+
+      if (profile.getPin() == password) {
+        System.out.println("Verification passed");
+        break; // Завершить цикл при успешной верификации
+      } else {
+        System.out.println("Verification failed. Please try again.");
+      }
     }
-
-    System.out.println("Verification failed");
-    authorize(profile);
   }
 }

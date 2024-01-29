@@ -4,6 +4,7 @@ import dev.crashbandicootfm.exception.TransactionException;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
@@ -13,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 @Setter
 @Getter
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 public class Profile {
 
   @NotNull

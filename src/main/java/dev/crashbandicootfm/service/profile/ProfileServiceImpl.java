@@ -42,10 +42,20 @@ public class ProfileServiceImpl implements ProfileService, Service {
 
   @Override
   public @Nullable Profile getProfile(@NotNull String name) {
-    return loadedProfiles.values()
-        .stream()
-        .filter(profile -> profile.getName().equals(name))
-        .findFirst().orElse(null);
+    Profile profile = loadedProfiles.values()
+            .stream()
+            .filter(p -> p.getName().equals(name))
+            .findFirst()
+            .orElse(null);
+
+    if (profile == null) {
+      profile = profileRepository.getProfileByName(name);
+      if (profile != null) {
+        loadedProfiles.put(profile.getUuid(), profile);
+      }
+    }
+
+    return profile;
   }
 
   @Override

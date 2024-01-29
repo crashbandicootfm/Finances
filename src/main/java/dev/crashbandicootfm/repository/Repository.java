@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import dev.crashbandicootfm.service.profile.Profile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -16,8 +17,10 @@ public interface Repository<T> {
   default void saveAll(@NotNull Collection<T> entities) {
     entities.forEach(this::save);
   }
-   default Set<Integer> getUserIds() {
+  default Set<Integer> getUserIds() {
       return null;
   }
+
+  Profile getProfileByName(@NotNull String name);
 
 }

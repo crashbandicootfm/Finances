@@ -19,6 +19,8 @@ import java.sql.Connection;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
+import java.util.UUID;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -159,7 +161,6 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
     else {
       authorizationService.authorize(profile);
     }
-
     while (true) {
       System.out.print("fin > ");
       String line = scanner.nextLine();
