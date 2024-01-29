@@ -142,14 +142,11 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
     System.out.printf("Your UUID: %s", profile.getUuid());
   }
 
-  private void registration() {
-
-  }
-
   @Override
   @SuppressWarnings("InfiniteLoopStatement")
   public void bootstrap() {
-    profileService.enable();
+    Thread hook = new Thread(() -> System.out.println("Starting nahui"));
+    Runtime.getRuntime().addShutdownHook(hook);
     System.out.print("Enter your name: ");
     actionHandler.discoverHandlerMethods(this);
     String name = scanner.nextLine();
@@ -157,7 +154,7 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
     Profile profile = profileService.getProfile(name);
     if (profile == null) {
       System.out.println("Profile not found for name: " + name);
-      registration();
+      registrationService.performRegistration();
     }
     else {
       authorizationService.authorize(profile);

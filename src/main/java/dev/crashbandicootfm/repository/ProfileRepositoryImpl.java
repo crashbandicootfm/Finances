@@ -6,10 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +30,8 @@ public class ProfileRepositoryImpl implements ProfileRepository {
     ResultSet resultSet = statement.executeQuery("SELECT * FROM users");
 
     while (resultSet.next()) {
-      int id = resultSet.getInt("id");
+      String idStr = resultSet.getString("id");
+      UUID id = UUID.fromString(idStr);
       String name = resultSet.getString("name");
       int pin = resultSet.getInt("pin");
 
@@ -49,7 +47,7 @@ public class ProfileRepositoryImpl implements ProfileRepository {
   public void save(@NotNull Profile profile) {
     String sql = "INSERT INTO users (id, name, pin) VALUES (?, ?, ?)";
     PreparedStatement preparedStatement = connection.prepareStatement(sql);
-    preparedStatement.setInt(1, profile.getId());
+    preparedStatement.setObject(1, profile.getId());
     preparedStatement.setString(2, profile.getName());
     preparedStatement.setInt(3, profile.getPin());
     preparedStatement.executeUpdate();
