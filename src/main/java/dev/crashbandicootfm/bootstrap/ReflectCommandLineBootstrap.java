@@ -26,9 +26,9 @@ import org.jetbrains.annotations.NotNull;
 @RequiredArgsConstructor
 public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
 
-  public static final String URL = "";
-  public static final String USERNAME = "";
-  public static final String PASSWORD = "";
+  public static final String URL = "jdbc:mysql://localhost:3306/dataBase";
+  public static final String USERNAME = "user";
+  public static final String PASSWORD = "pass";
 
   @NotNull
   ReflectActionHandlerService actionHandler = new ReflectActionHandlerServiceImpl();
@@ -39,7 +39,8 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
   @NotNull
   ConnectionFactory connectionFactory = new ConnectionFactoryImpl();
 
-  @NotNull Connection connection = connectionFactory.createConnection(URL, USERNAME, PASSWORD);
+  @NotNull
+  Connection connection = connectionFactory.createConnection(URL, USERNAME, PASSWORD);
 
   @NotNull
   ProfileRepository profileRepository = new ProfileRepositoryImpl(connection);
@@ -136,6 +137,19 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
     System.out.printf("Your UUID: %s", profile.getUuid());
   }
 
+  private void registration() {
+    Scanner scanner = new Scanner(System.in);
+    System.out.println("Registration for new profile");
+    System.out.print("Enter your id for adding to database: ");
+    int id = Integer.parseInt(scanner.nextLine());
+    System.out.print("Enter your name for adding to database: ");
+    String name = scanner.nextLine();
+    System.out.print("Enter your pin for adding to database: ");
+    int pin = scanner.nextInt();
+    Profile newProfile = new Profile(id, name, pin);
+    profileRepository.save(newProfile);
+  }
+
   @Override
   @SuppressWarnings("InfiniteLoopStatement")
   public void bootstrap() {
@@ -147,9 +161,11 @@ public final class ReflectCommandLineBootstrap implements CommandLineBootstrap {
     Profile profile = profileService.getProfile(name);
     if (profile == null) {
       System.out.println("Profile not found for name: " + name);
-      return;
+      registration();
     }
-    authorizationService.authorize(profile);
+    else {
+      authorizationService.authorize(profile);
+    }
 
     while (true) {
       System.out.print("fin > ");

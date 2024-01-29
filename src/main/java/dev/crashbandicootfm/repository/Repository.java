@@ -13,5 +13,5 @@ public interface Repository<T> {
 
   default void saveAll(@NotNull Collection<T> entities) {
     entities.forEach(this::save);
-  };
+  }
 }

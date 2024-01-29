@@ -45,10 +45,11 @@ public class ProfileRepositoryImpl implements ProfileRepository {
   @Override
   @SneakyThrows
   public void save(@NotNull Profile profile) {
-    String sql = "INSERT INTO users (name, pin) VALUES (?, ?)";
+    String sql = "INSERT INTO users (id, name, pin) VALUES (?, ?, ?)";
     PreparedStatement preparedStatement = connection.prepareStatement(sql);
-    preparedStatement.setString(1, profile.getName());
-    preparedStatement.setInt(2, profile.getPin());
+    preparedStatement.setInt(1, profile.getId());
+    preparedStatement.setString(2, profile.getName());
+    preparedStatement.setInt(3, profile.getPin());
     preparedStatement.executeUpdate();
   }
 }
